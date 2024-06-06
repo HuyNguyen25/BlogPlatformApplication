@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:htecc/models/home_state.dart';
-import 'package:htecc/screens/home/home.dart';
 
 class HomeStateNotifier extends Notifier<HomeState> {
   @override

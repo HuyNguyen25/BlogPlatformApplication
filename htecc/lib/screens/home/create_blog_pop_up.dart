@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:htecc/models/blog.dart';
-import 'package:htecc/providers/signed_in_provider.dart';
+import 'package:htecc/models/user.dart';
 import 'package:htecc/services/resources_service.dart';
 import 'package:htecc/shared_customized_resources/constants.dart';
 
 class CreateBlogPopUp extends ConsumerStatefulWidget {
-  const CreateBlogPopUp({super.key});
-
+  const CreateBlogPopUp({super.key, required this.user});
+  final User user;
   @override
   ConsumerState createState() => _CreateBlogPopUpState();
 }
@@ -17,8 +17,6 @@ class _CreateBlogPopUpState extends ConsumerState<CreateBlogPopUp> {
   String _field = availableFields.first;
   String _title = "";
   String _content = "";
-
-
   final _formKey = GlobalKey<FormState>();
   ScrollController _controller = ScrollController();
 
@@ -125,9 +123,9 @@ class _CreateBlogPopUpState extends ConsumerState<CreateBlogPopUp> {
                           ),
                           icon: Icon(Icons.send),
                           onPressed: () async {
-                            Blog blog = await ResourcesService(user: ref.read(signedInStateProvider.notifier).state!)
-                                .postBlog(field: _field, title: _title, content: _content);
-                            Navigator.of(context).pop();
+                           Blog blog = await ResourcesService(user: widget.user)
+                               .postBlog(field: _field, title: _title, content: _content);
+                           Navigator.of(context).pop();
                           },
                         )
                       )

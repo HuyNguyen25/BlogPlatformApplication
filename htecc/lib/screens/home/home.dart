@@ -1,9 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:htecc/models/home_state.dart';
-import 'package:htecc/models/user.dart';
 import 'package:htecc/providers/blogs_list_provider.dart';
 import 'package:htecc/providers/home_state_provider.dart';
 import 'package:htecc/providers/signed_in_provider.dart';
@@ -22,15 +19,34 @@ class Home extends ConsumerStatefulWidget {
 }
 
 class _HomeState extends ConsumerState<Home> {
+  final pb = PocketBase('http://10.0.2.2:8090');
+
+  Future<void> fetchBlogs() async{
+    await ref.read(blogsListProvider.notifier).updateBlogs();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    pb.collection('blogs').subscribe('*', (e) async {
+      await fetchBlogs();
+    });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    pb.collection('blogs').unsubscribe('*');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.read(signedInStateProvider.notifier).state!!;
+    final user = ref.read(signedInStateProvider.notifier).state!;
     final homeScreenState = ref.watch(homeStateProvider);
     final blogsList = ref.watch(blogsListProvider);
-    PocketBase('http://10.0.2.2:8090').collection('blogs').subscribe('*', (e) async {
-      await ref.read(blogsListProvider.notifier).updateBlogs();
-    });
+
     switch(homeScreenState) {
       case HomeState.NEWS_FEED:
         return blogsList.value == null ? loadingScreen : SafeArea(
@@ -85,7 +101,9 @@ class _HomeState extends ConsumerState<Home> {
               floatingActionButton: FloatingActionButton(
                 backgroundColor: Colors.grey,
                 child: Icon(Icons.add, color: Colors.white,),
-                onPressed: () async { _showCreateBlogPopUp(); }
+                onPressed: () async {
+                  _showCreateBlogPopUp();
+                }
               ),
             )
         );
@@ -104,7 +122,7 @@ class _HomeState extends ConsumerState<Home> {
     context: context,
     builder: (context) => Padding(
       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-      child: Align(alignment: Alignment.center, child:CreateBlogPopUp()),
+      child: Align(alignment: Alignment.center, child:CreateBlogPopUp(user: ref.read(signedInStateProvider.notifier).state!)),
     ),
     barrierDismissible: true
   );
